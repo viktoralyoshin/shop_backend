@@ -50,6 +50,7 @@ class ProductController {
           price: req.body.price,
           quantity: req.body.quantity,
           rating: req.body.rating,
+          categoryId: req.body.categoryId
         },
       });
 
