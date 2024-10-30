@@ -31,9 +31,10 @@ model User {
 }
 
 model Category {
-  id       Int       @id @default(autoincrement())
-  name     String    @unique
-  products Product[]
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  pictureName String?
+  products    Product[]
 }
 
 model Product {

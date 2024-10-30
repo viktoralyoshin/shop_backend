@@ -26,6 +26,7 @@ class CategoryController {
         const category = await prisma.category.create({
           data: {
             name: categoryName,
+            pictureName: req.body.pictureName
           },
         });
 
