@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  username  String    @unique
+  password  String
+  email     String?
+  phone     String?
+  firstName String?
+  lastName  String?
+  role      String?   @default("user")
+  createdAt DateTime  @default(now())
+  avatarUrl String?
+  reviews   Review[]
+  bucket    Bucket?
+  orders    Order[]
+  wishlist  Wishlist?
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  price       Float      @default(0)
+  categoryId  Int?
+  category    Category?  @relation(fields: [categoryId], references: [id])
+  quantity    Int        @default(0)
+  rating      Float      @default(0)
+  reviews     Review[]
+  buckets     Bucket[]
+  orders      Order[]
+  wishlists   Wishlist[]
+  pictures    Picture[]
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  content   String?
+  rating    Float    @default(0)
+  createdAt DateTime @default(now())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [id])
+}
+
+model Bucket {
+  id       Int       @id @default(autoincrement())
+  userId   String?   @unique
+  user     User?     @relation(fields: [userId], references: [id])
+  pruducts Product[]
+}
+
+model Order {
+  id        String    @id @default(uuid())
+  price     Float
+  createdAt DateTime  @default(now())
+  products  Product[]
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+}
+
+model Wishlist {
+  id       Int       @id @default(autoincrement())
+  products Product[]
+  userId   String?   @unique
+  user     User?     @relation(fields: [userId], references: [id])
+}
+
+model Picture {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  productId Int?
+  product   Product? @relation(fields: [productId], references: [id])
+}
