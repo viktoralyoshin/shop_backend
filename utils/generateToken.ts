@@ -5,7 +5,7 @@ const generateAccessToken = (id: string) => {
 
   if (secretKey) {
     return jwt.sign({ id }, secretKey, {
-      expiresIn: "5m",
+      expiresIn: "30m",
     });
   }
 };
@@ -15,7 +15,7 @@ const generateRefreshToken = (id: string) => {
 
   if (secretKey) {
     return jwt.sign({ id }, secretKey, {
-      expiresIn: "1d",
+      expiresIn: "7d",
     });
   }
 };
