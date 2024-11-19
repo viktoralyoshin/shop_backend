@@ -5,7 +5,7 @@ const generateAccessToken = (id: string) => {
 
   if (secretKey) {
     return jwt.sign({ id }, secretKey, {
-      expiresIn: "30m",
+      expiresIn: "1m",
     });
   }
 };

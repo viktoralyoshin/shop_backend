@@ -7,7 +7,7 @@ router.get("/", categoryController.getAll);
 router.post("/create", categoryController.createCategory);
 router.post('/update', categoryController.updateCategory);
 router.post('/delete', categoryController.deleteCategory);
-router.get('/getById', categoryController.getCategoryById);
-router.get('/getByName', categoryController.getCategoryByName);
+router.get('/:id', categoryController.getCategoryById);
+router.get('/:name', categoryController.getCategoryByName);
 
 export default router;

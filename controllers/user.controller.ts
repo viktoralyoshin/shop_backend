@@ -5,7 +5,7 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/generateToken";
-import jwt from "jsonwebtoken";
+import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { error } from "console";
 import validateToken from "../utils/validateToken";
 
@@ -14,7 +14,28 @@ const prisma = new PrismaClient();
 class UserController {
   getAll = async (req: Request, res: Response) => {
     try {
-      const users = await prisma.user.findMany();
+      const users = await prisma.user.findMany({
+        include: {
+          bucket: {
+            include: {
+              products: {
+                include: {
+                  category: true,
+                },
+              },
+            },
+          },
+          wishlist: {
+            include: {
+              products: {
+                include: {
+                  category: true,
+                },
+              },
+            },
+          },
+        },
+      });
 
       res.json(users);
     } catch (error) {
@@ -26,7 +47,27 @@ class UserController {
     try {
       const user = await prisma.user.findUnique({
         where: {
-          id: req.body.id,
+          id: req.params.id,
+        },
+        include: {
+          bucket: {
+            include: {
+              products: {
+                include: {
+                  category: true,
+                },
+              },
+            },
+          },
+          wishlist: {
+            include: {
+              products: {
+                include: {
+                  category: true,
+                },
+              },
+            },
+          },
         },
       });
 
@@ -50,7 +91,35 @@ class UserController {
         user.password = await bcrypt.hash(user.password, 10);
 
         const newUser = await prisma.user.create({
-          data: user,
+          data: {
+            ...user,
+            bucket: {
+              create: {},
+            },
+            wishlist: {
+              create: {},
+            },
+          },
+          include: {
+            bucket: {
+              include: {
+                products: {
+                  include: {
+                    category: true,
+                  },
+                },
+              },
+            },
+            wishlist: {
+              include: {
+                products: {
+                  include: {
+                    category: true,
+                  },
+                },
+              },
+            },
+          },
         });
 
         const refreshToken = generateRefreshToken(newUser.id);
@@ -63,9 +132,11 @@ class UserController {
           .cookie("refreshToken", refreshToken, {
             httpOnly: true,
             maxAge: 1000 * 60 * 60 * 24 * 7,
+            sameSite: "none",
           })
           .cookie("accessToken", accessToken, {
-            maxAge: 1000 * 60 * 30,
+            maxAge: 99999999,
+            sameSite: "none",
           })
           .json(userData);
 
@@ -86,6 +157,26 @@ class UserController {
         where: {
           phoneNumber: req.body.phoneNumber,
         },
+        include: {
+          bucket: {
+            include: {
+              products: {
+                include: {
+                  category: true,
+                },
+              },
+            },
+          },
+          wishlist: {
+            include: {
+              products: {
+                include: {
+                  category: true,
+                },
+              },
+            },
+          },
+        },
       });
 
       if (user) {
@@ -103,9 +194,11 @@ class UserController {
             .cookie("refreshToken", refreshToken, {
               httpOnly: true,
               maxAge: 1000 * 60 * 60 * 24 * 7,
+              sameSite: "none",
             })
             .cookie("accessToken", accessToken, {
-              maxAge: 1000 * 60 * 30,
+              maxAge: 99999999,
+              sameSite: "none",
             })
             .json(user);
           console.log(error);
@@ -134,21 +227,44 @@ class UserController {
             where: {
               id: verify.id,
             },
+            include: {
+              bucket: {
+                include: {
+                  products: {
+                    include: {
+                      category: true,
+                    },
+                  },
+                },
+              },
+              wishlist: {
+                include: {
+                  products: {
+                    include: {
+                      category: true,
+                    },
+                  },
+                },
+              },
+            },
           });
 
           if (user) {
             const accessToken = generateAccessToken(user.id);
-
-            res.json(user).cookie("accessToken", accessToken, {
-              maxAge: 1000 * 60 * 30,
-            });
+            res
+              .cookie("accessToken", accessToken, {
+                maxAge: 99999999,
+                sameSite: "none",
+              })
+              .json(user);
+            console.log("Токен обновлён");
           }
         } catch (error) {
           console.log(error);
-          res.json({ message: "Неавторизован" });
+          res.status(401).json({ message: "Неавторизован" });
         }
       } else {
-        res.json({
+        res.status(401).json({
           message: "Токен не существует",
         });
       }
@@ -161,7 +277,9 @@ class UserController {
     try {
       const { accessToken } = req.cookies;
 
-      if (validateToken(accessToken)) {
+      console.log(accessToken);
+
+      if (accessToken) {
         const secretKey: any = process.env.ACCESS_TOKEN_SECRET;
 
         try {
@@ -171,15 +289,43 @@ class UserController {
             where: {
               id: verify.id,
             },
+            include: {
+              bucket: {
+                include: {
+                  products: {
+                    include: {
+                      category: true,
+                    },
+                  },
+                },
+              },
+              wishlist: {
+                include: {
+                  products: {
+                    include: {
+                      category: true,
+                    },
+                  },
+                },
+              },
+            },
           });
 
-          res.json(user);
-        } catch (error) {
+          res.status(200).json(user);
+        } catch (error: unknown) {
+          if (error instanceof JsonWebTokenError) {
+            if (error.name == "TokenExpiredError") {
+              res.status(401).json(error.name);
+            } else {
+              res.status(401).json({
+                message: "Токен не существует",
+              });
+            }
+          }
           console.log(error);
-          res.json({ message: "Неавторизован" });
         }
       } else {
-        res.json({
+        res.status(401).json({
           message: "Токен не существует",
         });
       }
@@ -195,9 +341,11 @@ class UserController {
         .cookie("refreshToken", "", {
           httpOnly: true,
           maxAge: 0,
+          sameSite: "none",
         })
         .cookie("accessToken", "", {
           maxAge: 0,
+          sameSite: "none",
         })
         .json({
           message: "Выход выполнен успешно",

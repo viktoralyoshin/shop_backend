@@ -87,7 +87,7 @@ class CategoryController {
     try {
       const category = await prisma.category.findFirst({
         where: {
-          id: req.body.id,
+          id: parseInt(req.params.id),
         },
       });
 
@@ -101,7 +101,7 @@ class CategoryController {
     try {
       const category = await prisma.category.findUnique({
         where: {
-          name: req.body.name,
+          name: req.params.name,
         },
       });
 

@@ -9,6 +9,6 @@ router.post("/verify", userController.verify);
 router.post("/signOut", userController.signOut);
 router.post("/refreshToken", userController.refreshToken)
 router.get("/getAll", userController.getAll)
-router.get("/getById", userController.getById)
+router.get("/:id", userController.getById)
 
 export default router;

@@ -49,7 +49,6 @@ class ProductController {
           description: req.body.description,
           price: req.body.price,
           quantity: req.body.quantity,
-          rating: req.body.rating,
           categoryId: req.body.categoryId
         },
       });
@@ -84,7 +83,7 @@ class ProductController {
     try {
       const product = await prisma.product.findUnique({
         where: {
-          id: req.body.id,
+          id: parseInt(req.params.id),
         },
         include: {
           category: true,
@@ -101,7 +100,7 @@ class ProductController {
     try {
       const products = await prisma.product.findMany({
         where: {
-          categoryId: req.body.categoryId,
+          categoryId: parseInt(req.params.categoryId),
         },
         include: {
           category: true,

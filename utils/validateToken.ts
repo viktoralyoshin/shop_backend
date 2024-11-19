@@ -1,5 +1,5 @@
 const validateToken = (token: string) => {
-  if (token === undefined) {
+  if (token === undefined || token === "") {
     return false;
   } else {
     return true;

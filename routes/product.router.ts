@@ -7,7 +7,7 @@ router.get("/", productController.getAll);
 router.post("/create", productController.createProduct);
 router.post("/update", productController.updateProduct);
 router.post("/delete", productController.deleteProduct);
-router.get("/getById", productController.getProductById);
-router.get("/getByCategory", productController.getProductsByCategory);
+router.get("/:id", productController.getProductById);
+router.get("/category/:categoryId", productController.getProductsByCategory);
 
 export default router;

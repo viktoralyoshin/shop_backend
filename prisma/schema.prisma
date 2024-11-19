@@ -21,14 +21,12 @@ enum Role {
 model User {
   id          String    @id @default(uuid())
   phoneNumber String    @unique
-  email       String
   password    String
   firstName   String
   lastName    String
   role        Role      @default(USER)
   createdAt   DateTime  @default(now())
   avatarUrl   String?
-  reviews     Review[]
   bucket      Bucket?
   orders      Order[]
   wishlist    Wishlist?
@@ -49,30 +47,17 @@ model Product {
   categoryId  Int?
   category    Category?  @relation(fields: [categoryId], references: [id])
   quantity    Int        @default(0)
-  rating      Float      @default(0)
-  reviews     Review[]
   buckets     Bucket[]
   orders      Order[]
   wishlists   Wishlist[]
-  pictures    Picture[]
-}
-
-model Review {
-  id        Int      @id @default(autoincrement())
-  content   String?
-  rating    Float    @default(0)
-  createdAt DateTime @default(now())
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  productId Int?
-  product   Product? @relation(fields: [productId], references: [id])
+  pictureUrl  String?
 }
 
 model Bucket {
   id       Int       @id @default(autoincrement())
   userId   String?   @unique
   user     User?     @relation(fields: [userId], references: [id])
-  pruducts Product[]
+  products Product[]
 }
 
 model Order {
@@ -89,11 +74,4 @@ model Wishlist {
   products Product[]
   userId   String?   @unique
   user     User?     @relation(fields: [userId], references: [id])
-}
-
-model Picture {
-  id        Int      @id @default(autoincrement())
-  imageUrl  String
-  productId Int?
-  product   Product? @relation(fields: [productId], references: [id])
 }
